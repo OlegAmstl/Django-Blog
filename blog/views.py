@@ -12,12 +12,20 @@ def post_list(request):
     return render(request, 'blog/post/list.html', {'posts': posts})
 
 
-def post_detail(request, id):
+def post_detail(request, year, month, day, post):
     """
     Displays the selected post
     :param request:
-    :param id: post id
-    :return: selected post
+    :param year: year the post was published
+    :param month: month the post was published
+    :param day: day the post was published
+    :param post: slug the post
+    :return: selected the post
     """
-    post = get_object_or_404(Post, pk=id, status=Post.Status.PUBLISHED)
+    post = get_object_or_404(Post,
+                             status=Post.Status.PUBLISHED,
+                             publish__year=year,
+                             publish__month=month,
+                             publish__day=day,
+                             slug=post)
     return render(request, 'blog/post/detail.html', {'post': post})

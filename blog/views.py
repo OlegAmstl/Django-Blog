@@ -6,7 +6,7 @@ from .models import Post
 
 def post_list(request):
     """
-    Displays a list of posts on the main page
+    Displays a list of  фддposts on the main page
     :return: all posts
     """
     post_list = Post.published.all()

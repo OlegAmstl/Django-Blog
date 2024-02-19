@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.core.paginator import Paginator, EmptyPage
+from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.views.decorators.http import require_POST
@@ -8,20 +9,20 @@ from taggit.models import Tag
 from .models import Post, Comment
 from .forms import EmailPostForm, CommentForm
 
-
-class PostListView(ListView):
-    """Displays a list of  posts on the main page"""
-
-    queryset = Post.published.all()
-    context_object_name = 'posts'
-    paginate_by = 3
-    template_name = 'blog/post/list.html'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        tag = get_object_or_404(Tag, slug=self.kwargs['tag_slug'])
-        context['tag'] = tag
-        return context
+# TODO: Replace function with class
+# class PostListView(ListView):
+#     """Displays a list of  posts on the main page"""
+#
+#     queryset = Post.published.all()
+#     context_object_name = 'posts'
+#     paginate_by = 3
+#     template_name = 'blog/post/list.html'
+#
+#     def get_context_data(self, *, object_list=None, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         tag = get_object_or_404(Tag, slug=self.kwargs['tag_slug'])
+#         context['tag'] = tag
+#         return context
 
 
 def post_list(request, tag_slug=None):
@@ -60,10 +61,21 @@ def post_detail(request, year, month, day, post):
                              publish__day=day,
                              slug=post)
     comments = post.comments.filter(active=True)
+
     form = CommentForm()
+
+    # List of similar posts
+    post_tags_ids = post.tags.values_list('id', flat=True)
+    simular_posts = Post.published.filter(tags__in=post_tags_ids).exclude(
+        id=post.id
+    )
+    simular_posts = simular_posts.annotate(same_tags=Count('tags')).order_by(
+        '-same_tags', '-publish'
+    )[:4]
     return render(request, 'blog/post/detail.html', {'post': post,
                                                      'comments': comments,
-                                                     'form': form})
+                                                     'form': form,
+                                                     'simular_posts': simular_posts})
 
 
 def post_share(request, post_id):

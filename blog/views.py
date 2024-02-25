@@ -79,6 +79,7 @@ def post_detail(request, year, month, day, post):
                                             'similar_posts': similar_posts})
 
 
+# TODO: replace on class
 def post_share(request, post_id):
     """
     Sharing post.

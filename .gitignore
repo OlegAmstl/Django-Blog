@@ -160,3 +160,4 @@ cython_debug/
 .idea/
 
 migrations/
+my_site.json
